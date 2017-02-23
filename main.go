@@ -44,6 +44,10 @@ func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	t.templ.Execute(w, data)
 }
 
+func handleIndex(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/login", http.StatusPermanentRedirect)
+}
+
 func main() {
 	addr := flag.String("addr", ":8080", "The addr of the application.")
 	flag.Parse()
@@ -57,6 +61,7 @@ func main() {
 	)
 	r := newRoom()
 	r.tracer = trace.New(os.Stdout)
+	http.HandleFunc("/", handleIndex)
 	http.Handle("/chat", MustAuth(&templateHandler{filename: "chat.html"}))
 	http.Handle("/login", &templateHandler{filename: "login.html"})
 	http.HandleFunc("/auth/", loginHandler)

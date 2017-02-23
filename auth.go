@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/objx"
 )
 
+// ChatUser represents a user of the chat room.
 type ChatUser interface {
 	UniqueID() string
 	AvatarURL() string
