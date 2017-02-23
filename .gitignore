@@ -1,0 +1,5 @@
+chat
+tmp
+tmp/*
+avatars/*
+creds.sh
