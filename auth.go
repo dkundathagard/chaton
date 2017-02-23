@@ -71,13 +71,13 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 				provider, err), http.StatusBadRequest)
 			return
 		}
-		loginUrl, err := provider.GetBeginAuthURL(nil, nil)
+		loginURL, err := provider.GetBeginAuthURL(nil, nil)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Error when trying to GetBeginAuthURL for %s :%s",
 				provider, err), http.StatusInternalServerError)
 			return
 		}
-		w.Header().Set("Location", loginUrl)
+		w.Header().Set("Location", loginURL)
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	case "callback":
 		provider, err := gomniauth.Provider(provider)
@@ -101,13 +101,13 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		chatUser := &chatUser{User: user}
 		m := md5.New()
 		io.WriteString(m, strings.ToLower(user.Email()))
-		userId := fmt.Sprintf("%x", m.Sum(nil))
+		userID := fmt.Sprintf("%x", m.Sum(nil))
 		avatarURL, err := avatars.GetAvatarURL(chatUser)
 		if err != nil {
 			log.Fatalln("Error when trying to GetAvatarURL", "-", err)
 		}
 		authCookieValue := objx.New(map[string]interface{}{
-			"userid":     userId,
+			"userid":     userID,
 			"name":       user.Name(),
 			"avatar_url": avatarURL,
 		}).MustBase64()

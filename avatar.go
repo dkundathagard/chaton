@@ -6,7 +6,7 @@ import (
 	"path"
 )
 
-// ErrNoAvatar is the error that is returned when the Avatar instance is unable
+// ErrNoAvatarURL is the error that is returned when the Avatar instance is unable
 // to provide an avatar URL.
 var ErrNoAvatarURL = errors.New("chat: Unable to get an avatar url")
 
@@ -33,11 +33,13 @@ func (a TryAvatars) GetAvatarURL(u ChatUser) (string, error) {
 	return "", ErrNoAvatarURL
 }
 
-// AuthAvatar is represents an avatar provided by the OAuth2 provider
+// AuthAvatar represents an avatar provided by the OAuth2 provider.
 type AuthAvatar struct{}
 
+// UseAuthAvatar is an instance of AuthAvatar to be used in the app.
 var UseAuthAvatar AuthAvatar
 
+// GetAvatarURL returns the url to the avatar image of an AuthAvatar.
 func (AuthAvatar) GetAvatarURL(u ChatUser) (string, error) {
 	url := u.AvatarURL()
 	if len(url) == 0 {
@@ -46,18 +48,24 @@ func (AuthAvatar) GetAvatarURL(u ChatUser) (string, error) {
 	return url, nil
 }
 
+// GravatarAvatar represents an avatar provided by the Gravar service.
 type GravatarAvatar struct{}
 
+// UseGravatarAvatar is an instance of GravatarAvatar to be used in the app.
 var UseGravatarAvatar GravatarAvatar
 
+// GetAvatarURL returns the url to the avatar image of a GravatarAvatar.
 func (GravatarAvatar) GetAvatarURL(u ChatUser) (string, error) {
 	return "https://www.gravatar.com/avatar/" + u.UniqueID(), nil
 }
 
+// FileSystemAvatar represents an avatar provided by the Gravar service.
 type FileSystemAvatar struct{}
 
+// UseFileSystemAvatar is an instance of FileSystemAvatar to be used in the app.
 var UseFileSystemAvatar FileSystemAvatar
 
+// GetAvatarURL returns the url to the avatar image of a FileSystemAvatar.
 func (FileSystemAvatar) GetAvatarURL(u ChatUser) (string, error) {
 	files, err := ioutil.ReadDir("avatars")
 	if err != nil {
