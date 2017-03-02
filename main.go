@@ -9,6 +9,7 @@ import (
 	mgo "gopkg.in/mgo.v2"
 
 	"github.com/dkundathagard/trace"
+	"github.com/gorilla/mux"
 	"github.com/stretchr/gomniauth"
 	"github.com/stretchr/gomniauth/providers/google"
 	"github.com/stretchr/signature"
@@ -27,7 +28,7 @@ func main() {
 		log.Fatalln("Could not connect to local MongoDB database.")
 	}
 	defer session.Close()
-	db := session.DB("chat")
+	db := session.DB("chaton")
 	addr := flag.String("addr", ":8080", "The addr of the application.")
 	flag.Parse()
 	gomniauth.SetSecurityKey(signature.RandomKey(64))
@@ -40,14 +41,15 @@ func main() {
 	)
 	r := newRoom("RoomA", db.C("RoomA"))
 	r.tracer = trace.New(os.Stdout)
-	http.HandleFunc("/", handleIndex)
-	http.Handle("/chat", MustAuth(&templateHandler{filename: "chat.html"}))
-	http.Handle("/login", &templateHandler{filename: "login.html"})
-	http.HandleFunc("/auth/", loginHandler)
-	http.Handle("/room", r)
-	http.Handle("/upload", MustAuth(&templateHandler{filename: "upload.html"}))
-	http.HandleFunc("/uploader", uploaderHandler)
-	http.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
+	router := mux.NewRouter()
+	router.HandleFunc("/", handleIndex)
+	router.Handle("/chat", MustAuth(&templateHandler{filename: "chat.html"}))
+	router.Handle("/login", &templateHandler{filename: "login.html"})
+	router.HandleFunc("/auth/", loginHandler)
+	router.Handle("/room", r)
+	router.Handle("/upload", MustAuth(&templateHandler{filename: "upload.html"}))
+	router.HandleFunc("/uploader", uploaderHandler)
+	router.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
 		http.SetCookie(w, &http.Cookie{
 			Name:   "auth",
 			Value:  "",
@@ -64,7 +66,7 @@ func main() {
 	go r.run()
 	// start web server
 	log.Println("Starting web server on", *addr)
-	if err := http.ListenAndServe(*addr, nil); err != nil {
+	if err := http.ListenAndServe(*addr, router); err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
 }
