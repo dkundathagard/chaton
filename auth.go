@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/gorilla/mux"
 	"github.com/stretchr/gomniauth"
 	authcommon "github.com/stretchr/gomniauth/common"
 	"github.com/stretchr/objx"
@@ -28,7 +29,7 @@ func (u chatUser) UniqueID() string {
 	return u.uniqueID
 }
 
-// MustAuth wraps an http.Handler, making it require authentication
+// MustAuth middleware wraps an http.Handler, making it require authentication
 func MustAuth(handler http.Handler) http.Handler {
 	return &authHandler{next: handler}
 }
@@ -55,14 +56,9 @@ func (h *authHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // loginHandler handles the third-party login process.
 // format: /auth/{action}/{provider}
 func loginHandler(w http.ResponseWriter, r *http.Request) {
-	seqs := strings.Split(r.URL.Path, "/")
-	if len(seqs) < 4 {
-		w.WriteHeader(http.StatusNotFound)
-		fmt.Fprintf(w, "URL %s not supported: too few arguments to auth", r.URL.Path)
-		return
-	}
-	action := seqs[2]
-	provider := seqs[3]
+	vars := mux.Vars(r)
+	action := vars["action"]
+	provider := vars["provider"]
 	switch action {
 	case "login":
 		provider, err := gomniauth.Provider(provider)

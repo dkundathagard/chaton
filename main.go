@@ -45,7 +45,7 @@ func main() {
 	router.HandleFunc("/", handleIndex)
 	router.Handle("/chat", MustAuth(&templateHandler{filename: "chat.html"}))
 	router.Handle("/login", &templateHandler{filename: "login.html"})
-	router.HandleFunc("/auth/", loginHandler)
+	router.HandleFunc("/auth/{action}/{provider}", loginHandler)
 	router.Handle("/room", r)
 	router.Handle("/upload", MustAuth(&templateHandler{filename: "upload.html"}))
 	router.HandleFunc("/uploader", uploaderHandler)
