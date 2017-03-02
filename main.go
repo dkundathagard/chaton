@@ -2,19 +2,15 @@ package main
 
 import (
 	"flag"
-	"html/template"
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
-	"sync"
 
 	mgo "gopkg.in/mgo.v2"
 
 	"github.com/dkundathagard/trace"
 	"github.com/stretchr/gomniauth"
 	"github.com/stretchr/gomniauth/providers/google"
-	"github.com/stretchr/objx"
 	"github.com/stretchr/signature"
 )
 
@@ -23,31 +19,6 @@ var avatars Avatar = TryAvatars{
 	UseFileSystemAvatar,
 	UseAuthAvatar,
 	UseGravatarAvatar,
-}
-
-// templ represents a single template
-type templateHandler struct {
-	once     sync.Once
-	filename string
-	templ    *template.Template
-}
-
-// ServeHTTP handles the HTTP request
-func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	t.once.Do(func() {
-		t.templ = template.Must(template.ParseFiles(filepath.Join("templates", t.filename)))
-	})
-	data := map[string]interface{}{
-		"Host": r.Host,
-	}
-	if authCookie, err := r.Cookie("auth"); err == nil {
-		data["UserData"] = objx.MustFromBase64(authCookie.Value)
-	}
-	t.templ.Execute(w, data)
-}
-
-func handleIndex(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/login", http.StatusPermanentRedirect)
 }
 
 func main() {
