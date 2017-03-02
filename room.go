@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 
+	mgo "gopkg.in/mgo.v2"
+
 	"github.com/dkundathagard/trace"
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/objx"
@@ -15,6 +17,7 @@ const (
 )
 
 type room struct {
+	name string
 	// forward is a channel that holds incoming messages
 	// that should be forwarded to other clients
 	forward chan *message
@@ -25,16 +28,20 @@ type room struct {
 	// clients holds all current clients in this room.
 	clients map[*client]bool
 	// tracer will receive trace information of activity in the room.
+	coll *mgo.Collection
+	//
 	tracer trace.Tracer
 }
 
 // newRoom makes a new room.
-func newRoom() *room {
+func newRoom(name string, c *mgo.Collection) *room {
 	return &room{
+		name:    name,
 		forward: make(chan *message),
 		join:    make(chan *client),
 		leave:   make(chan *client),
 		clients: make(map[*client]bool),
+		coll:    c,
 		tracer:  trace.Off(),
 	}
 }
@@ -51,6 +58,10 @@ func (r *room) run() {
 			r.tracer.Trace("Client left")
 		case msg := <-r.forward:
 			r.tracer.Trace("Message received: ", msg.Message)
+			if err := r.coll.Insert(msg); err != nil {
+				r.tracer.Trace("Error persisting message to db: ", msg.Message)
+				continue
+			}
 			for client := range r.clients {
 				client.send <- msg
 				r.tracer.Trace(" -- sent to client")

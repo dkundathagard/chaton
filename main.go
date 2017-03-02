@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"sync"
 
+	mgo "gopkg.in/mgo.v2"
+
 	"github.com/dkundathagard/trace"
 	"github.com/stretchr/gomniauth"
 	"github.com/stretchr/gomniauth/providers/google"
@@ -49,6 +51,12 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	session, err := mgo.Dial("localhost")
+	if err != nil {
+		log.Fatalln("Could not connect to local MongoDB database.")
+	}
+	defer session.Close()
+	db := session.DB("chat")
 	addr := flag.String("addr", ":8080", "The addr of the application.")
 	flag.Parse()
 	gomniauth.SetSecurityKey(signature.RandomKey(64))
@@ -59,7 +67,7 @@ func main() {
 			"http://localhost:8080/auth/callback/google",
 		),
 	)
-	r := newRoom()
+	r := newRoom("RoomA", db.C("RoomA"))
 	r.tracer = trace.New(os.Stdout)
 	http.HandleFunc("/", handleIndex)
 	http.Handle("/chat", MustAuth(&templateHandler{filename: "chat.html"}))
