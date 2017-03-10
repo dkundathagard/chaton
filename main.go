@@ -8,7 +8,7 @@ import (
 
 	mgo "gopkg.in/mgo.v2"
 
-	"github.com/dkundathagard/trace"
+	"github.com/dkundathagard/chat/trace"
 	"github.com/gorilla/mux"
 	"github.com/stretchr/gomniauth"
 	"github.com/stretchr/gomniauth/providers/google"

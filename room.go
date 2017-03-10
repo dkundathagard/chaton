@@ -6,7 +6,7 @@ import (
 
 	mgo "gopkg.in/mgo.v2"
 
-	"github.com/dkundathagard/trace"
+	"github.com/dkundathagard/chat/trace"
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/objx"
 )
